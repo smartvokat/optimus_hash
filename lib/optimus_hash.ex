@@ -52,10 +52,14 @@ defmodule OptimusHash do
     (number * o.prime &&& o.max_int) ^^^ o.random
   end
 
+  def encode(_, _), do: nil
+
   @doc """
   Encodes the given number.
   """
   def decode(o, number) do
     (number ^^^ o.random) * o.mod_inverse &&& o.max_int
   end
+
+  def decode(_, _), do: nil
 end

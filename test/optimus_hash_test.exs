@@ -40,6 +40,12 @@ defmodule OptimusHashTest do
       assert OptimusHash.encode(o, 1_580_030_173) == 1_844_103_327
       assert OptimusHash.encode(o, 2_147_483_647) == 1_689_436_533
     end
+
+    test "returns nil if number is not an integer" do
+      o = OptimusHash.new(prime: 1_580_030_173, mod_inverse: 59_260_789, random: 1_163_945_558)
+      refute OptimusHash.encode(o, "2_147_483_647")
+      refute OptimusHash.encode(o, nil)
+    end
   end
 
   describe "decode()" do
@@ -49,6 +55,12 @@ defmodule OptimusHashTest do
       assert OptimusHash.decode(o, 1_103_647_397) == 15
       assert OptimusHash.decode(o, 1_844_103_327) == 1_580_030_173
       assert OptimusHash.decode(o, 1_689_436_533) == 2_147_483_647
+    end
+
+    test "returns nil if number is not an integer" do
+      o = OptimusHash.new(prime: 1_580_030_173, mod_inverse: 59_260_789, random: 1_163_945_558)
+      refute OptimusHash.decode(o, "1_689_436_533")
+      refute OptimusHash.decode(o, nil)
     end
   end
 end
