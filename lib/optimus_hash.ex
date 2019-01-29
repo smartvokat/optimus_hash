@@ -12,13 +12,13 @@ defmodule OptimusHash do
   defstruct prime: nil,
             mod_inverse: nil,
             random: nil,
-            max_int: 2_147_483_647
+            max_id: nil
 
   @type t :: %__MODULE__{
           prime: non_neg_integer,
           mod_inverse: non_neg_integer,
           random: non_neg_integer,
-          max_int: non_neg_integer
+          max_id: non_neg_integer
         }
 
   @doc """
@@ -29,17 +29,17 @@ defmodule OptimusHash do
 
   ## Options
 
-    * `:prime` - A prime number which is smaller than `:max_int`.
+    * `:prime` - A prime number which is smaller than `:max_id`.
     * `:mod_inverse` - The [modular multiplicative inverse](https://en.wikipedia.org/wiki/Modular_multiplicative_inverse)
-      of the provided prime number. Must fulfill the constraint `(prime * mod_inverse) & max_int == 1`
-    * `:random` - A random integer smaller than `:max_int`
-    * `:max_int` (optional) - The maximum. Defaults to `2_147_483_647` (32bit integer).
+      of the provided prime number. Must fulfill the constraint `(prime * mod_inverse) & max_id == 1`
+    * `:random` - A random integer smaller than `:max_id`
+    * `:max_size` (optional) - The maximum number of bits for the largest id. Defaults to `31`
     * `:validate` (optional) - Flag to toggle prime number validation. Defaults to `true`
 
   ## Examples
 
       iex> OptimusHash.new([prime: 1580030173, mod_inverse: 59260789, random: 1163945558])
-      %OptimusHash{prime: 1580030173, mod_inverse: 59260789, random: 1163945558, max_int: 2147483647}
+      %OptimusHash{prime: 1580030173, mod_inverse: 59260789, random: 1163945558, max_id: 2147483647}
 
   """
   @spec new(Keyword.t()) :: OptimusHash.t()
@@ -47,14 +47,16 @@ defmodule OptimusHash do
     prime = Keyword.get(opts, :prime)
     mod_inverse = Keyword.get(opts, :mod_inverse)
     random = Keyword.get(opts, :random)
-    max_int = Keyword.get(opts, :max_int, 2_147_483_647)
+    max_id = trunc(:math.pow(2, Keyword.get(opts, :max_size, 31))) - 1
 
-    if prime >= max_int do
-      raise ArgumentError, "Argument :prime is larger or equal to :max_int"
+    if prime > max_id do
+      raise ArgumentError,
+            "Argument :prime is larger than the largest possible id with :max_size"
     end
 
-    if random >= max_int do
-      raise ArgumentError, "Argument :random is larger or equal to :max_int"
+    if random > max_id do
+      raise ArgumentError,
+            "Argument :random is larger than the largest possible id with :max_size"
     end
 
     if Keyword.get(opts, :validate, true) do
@@ -62,12 +64,12 @@ defmodule OptimusHash do
         raise ArgumentError, "Argument :prime is not a prime number"
       end
 
-      if (prime * mod_inverse &&& max_int) !== 1 do
+      if (prime * mod_inverse &&& max_id) !== 1 do
         raise ArgumentError, "Argument :mod_inverse is invalid"
       end
     end
 
-    %OptimusHash{prime: prime, mod_inverse: mod_inverse, random: random, max_int: max_int}
+    %OptimusHash{prime: prime, mod_inverse: mod_inverse, random: random, max_id: max_id}
   end
 
   @doc """
@@ -79,7 +81,7 @@ defmodule OptimusHash do
   """
   @spec encode(OptimusHash.t(), non_neg_integer) :: non_neg_integer
   def encode(o, number) when is_integer(number) do
-    (number * o.prime &&& o.max_int) ^^^ o.random
+    (number * o.prime &&& o.max_id) ^^^ o.random
   end
 
   def encode(_, _), do: nil
@@ -93,7 +95,7 @@ defmodule OptimusHash do
   """
   @spec decode(OptimusHash.t(), non_neg_integer) :: non_neg_integer
   def decode(o, number) when is_integer(number) do
-    (number ^^^ o.random) * o.mod_inverse &&& o.max_int
+    (number ^^^ o.random) * o.mod_inverse &&& o.max_id
   end
 
   def decode(_, _), do: nil

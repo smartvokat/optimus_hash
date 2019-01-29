@@ -7,17 +7,17 @@ defmodule OptimusHashTest do
       assert o.prime == 435_168_289
       assert o.mod_inverse == 1_166_565_345
       assert o.random == 1_831_981_360
-      assert o.max_int == 2_147_483_647
+      assert o.max_id == 2_147_483_647
 
       o =
         OptimusHash.new(
           prime: 4_125_641_476_418_359_867,
           mod_inverse: 3_805_797_621_438_101_235,
-          random: 3_645_042_782,
-          max_int: 4_611_686_018_427_387_903
+          random: 3_062_879_115,
+          max_size: 62
         )
 
-      assert o.max_int == 4_611_686_018_427_387_903
+      assert o.max_id == 4_611_686_018_427_387_903
     end
 
     test "raises when provided with an non-prime number" do
@@ -41,23 +41,27 @@ defmodule OptimusHashTest do
     end
 
     test "raises when provided a prime number larger than :max_int" do
-      assert_raise ArgumentError, "Argument :prime is larger or equal to :max_int", fn ->
-        OptimusHash.new(
-          prime: 67_280_421_310_721,
-          mod_inverse: 1_718_041_753,
-          random: 1_163_945_558
-        )
-      end
+      assert_raise ArgumentError,
+                   "Argument :prime is larger than the largest possible id with :max_size",
+                   fn ->
+                     OptimusHash.new(
+                       prime: 67_280_421_310_721,
+                       mod_inverse: 1_718_041_753,
+                       random: 1_163_945_558
+                     )
+                   end
     end
 
     test "raises when provided a random number larger than :max_int" do
-      assert_raise ArgumentError, "Argument :random is larger or equal to :max_int", fn ->
-        OptimusHash.new(
-          prime: 1_580_030_173,
-          mod_inverse: 59_260_789,
-          random: 9_223_372_036_854_775_807
-        )
-      end
+      assert_raise ArgumentError,
+                   "Argument :random is larger than the largest possible id with :max_size",
+                   fn ->
+                     OptimusHash.new(
+                       prime: 1_580_030_173,
+                       mod_inverse: 59_260_789,
+                       random: 9_223_372_036_854_775_807
+                     )
+                   end
     end
   end
 
@@ -68,6 +72,18 @@ defmodule OptimusHashTest do
       assert OptimusHash.encode(o, 15) == 1_103_647_397
       assert OptimusHash.encode(o, 1_580_030_173) == 1_844_103_327
       assert OptimusHash.encode(o, 2_147_483_647) == 1_689_436_533
+    end
+
+    test "handles large ids correctly" do
+      o =
+        OptimusHash.new(
+          prime: 530_926_331_106_355_571,
+          mod_inverse: 174_682_876_010_062_779,
+          random: 1_239_359_805,
+          max_size: 62
+        )
+
+      assert OptimusHash.encode(o, 26_331_106_355_571) == 1_438_642_317_397_977_236
     end
 
     test "returns nil if number is not an integer" do
@@ -90,6 +106,18 @@ defmodule OptimusHashTest do
       o = OptimusHash.new(prime: 1_580_030_173, mod_inverse: 59_260_789, random: 1_163_945_558)
       refute OptimusHash.decode(o, "1_689_436_533")
       refute OptimusHash.decode(o, nil)
+    end
+
+    test "handles large ids correctly" do
+      o =
+        OptimusHash.new(
+          prime: 1_838_344_500_625_809_091,
+          mod_inverse: 850_183_666_356_126_187,
+          random: 3_851_507_139,
+          max_size: 62
+        )
+
+      assert OptimusHash.decode(o, 3_972_817_339_255_900_124) == 1_689_436_533
     end
   end
 end
