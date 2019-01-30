@@ -11,6 +11,10 @@ defmodule OptimusHash.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
+      # Hex
+      description: "ID hashing based on Knuth's multiplicative hashing algorithm",
+      package: package(),
+
       # Docs
       name: "OptimusHash",
       docs: docs()
@@ -29,6 +33,16 @@ defmodule OptimusHash.MixProject do
       {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end
+
+  def package do
+    [
+      maintainers: ["smartvokat"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/smartvokat/optimus_hash"},
+      files: [".formatter.exs", "mix.exs", "README.md", "LICENSE", "lib"]
+    ]
+  end
+
   def docs do
     [
       main: "OptimusHash",
