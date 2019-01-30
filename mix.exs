@@ -1,28 +1,46 @@
 defmodule OptimusHash.MixProject do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [
       app: :optimus_hash,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+
+      # Docs
+      name: "OptimusHash",
+      docs: docs()
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
+      # Docs
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+    ]
+  end
+  def docs do
+    [
+      main: "OptimusHash",
+      source_ref: "v#{@version}",
+      canonical: "http://hexdocs.pm/optimus_hash",
+      source_url: "https://github.com/smartvokat/optimus_hash",
+      extras: [
+        "guides/integrations/absinthe-relay.md"
+      ],
+      groups_for_extras: [
+        Integrations: ~r/guides\/integrations\/.*/
+      ]
     ]
   end
 end
