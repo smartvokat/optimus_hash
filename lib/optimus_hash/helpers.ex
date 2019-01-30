@@ -1,4 +1,6 @@
 defmodule OptimusHash.Helpers do
+  @moduledoc false
+
   @spec mod_inverse(nil | integer(), any()) :: nil | integer()
   def mod_inverse(a, m) when a >= m or a < 0, do: mod_inverse(mod(a, m), m)
   def mod_inverse(a, m), do: mod(calc_mod_inverse(m, a, 1, 0), m)

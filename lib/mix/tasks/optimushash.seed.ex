@@ -1,107 +1,127 @@
 defmodule Mix.Tasks.OptimusHash.Seed do
-  alias OptimusHash.Helpers
+  @moduledoc """
+  Generates the required configuration for using OptimusHash. This task is intended
+  to be run only once.
+
+  ## Example
+
+      mix ecto.dump
+
+  ## Command line options
+
+    * `--bits` - does not compile applications before dumping
+    * `--no-deps-check` - does not check depedendencies before dumping
+  """
+
+  import Mix.Generator
 
   use Mix.Task
+  use Bitwise
 
-  def run(_) do
-    Application.ensure_all_started(:inets)
-    Application.ensure_all_started(:ssl)
+  @shortdoc "Generates a set of configuration values for OptimusHash"
 
-    n = :rand.uniform(50)
-    url = 'https://primes.utm.edu/lists/small/millions/primes#{n}.zip'
+  @switches [
+    bits: [:integer]
+  ]
 
-    IO.puts("** Warning: Make sure you have read the documentation about seeding **")
-    IO.puts("Documentation: https://hexdocs.pm/optimus_hash/overview.html")
-    IO.puts("")
-    IO.puts("Downloading primes from #{url}…")
+  def run(args) do
+    case OptionParser.parse!(args, strict: @switches) do
+      {opts, arguments} ->
+        max_size = Keyword.get(opts, :bits, 31)
 
-    body =
-      case :httpc.request(:get, {url, []}, [], body_format: :binary) do
-        {:ok, response} ->
-          {{_, 200, 'OK'}, _headers, body} = response
-          body
+        if max_size < 16 do
+          Mix.raise("Using less than 16bits is not recommended")
+        end
 
-        {:error, reason} ->
-          raise "Failed to download primes from #{url} because of: #{inspect(reason)}"
-      end
+        prime =
+          case List.first(arguments) do
+            nil ->
+              try do
+                {result, 0} =
+                  System.cmd("openssl", ["prime", "-generate", "-bits", "#{max_size}"])
 
-    {:ok, files} = :zip.unzip(body, [:memory, file_list: ['primes#{n}.txt']])
+                case Integer.parse(result) do
+                  {number, _} ->
+                    number
 
-    primes =
-      files
-      |> List.first()
-      |> elem(1)
-      |> String.split("\r\n")
-      |> Enum.map(&String.trim(&1))
-      |> Enum.drop(2)
-      |> Enum.flat_map(&String.split(&1, " "))
+                  :error ->
+                    Mix.raise(
+                      "expected a valid integer as a prime, got: #{inspect(List.first(arguments))}"
+                    )
+                end
+              rescue
+                _ ->
+                  Mix.raise(
+                    "Failed to generate a prime using 'openssl prime -generate -bits #{max_size}'. " <>
+                      "You can either install 'openssl' and run the command again or get a prime " <>
+                      "from somewhere else (e.g. http://primes.utm.edu/lists/small/millions/). " <>
+                      "You should independently verify that your number is in fact a prime number. " <>
+                      "To run the command again use: mix optimus_hash.seed --bits #{max_size} YOUR_PRIME"
+                  )
+              end
 
-    if length(Enum.uniq(primes)) != length(primes) do
-      IO.puts("Duplicate prime numbers detected–this is suspicious.")
-      IO.puts("It seems that the file at #{url} contains duplicate entries.")
-      IO.puts("Please consult the documentation: https://hexdocs.pm/optimus_hash/overview.html")
-      Mix.raise("Aborting")
-    end
+            _ ->
+              case Integer.parse(List.first(arguments)) do
+                {number, _} ->
+                  number
 
-    {prime, _} = primes |> Enum.random() |> Integer.parse()
+                :error ->
+                  Mix.raise(
+                    "expected a valid integer as a prime, got: #{inspect(List.first(arguments))}"
+                  )
+              end
+          end
 
-    if !Helpers.is_prime?(prime) do
-      IO.puts("Failed to get a random prime–this is suspicious.")
-      IO.puts("Please validate the file at #{url} according to the documentation.")
-      IO.puts("Documentation: https://hexdocs.pm/optimus_hash/overview.html")
-      Mix.raise("Aborting")
-    end
+        max_id = trunc(:math.pow(2, max_size)) - 1
+        mod_inverse = OptimusHash.Helpers.mod_inverse(prime, max_id + 1)
 
-    max_int = 2_147_483_647
-    mod_inverse = Helpers.mod_inverse(prime, max_int + 1)
-    random = :rand.uniform(max_int)
+        random =
+          :crypto.strong_rand_bytes(max_size)
+          |> Base.encode16()
+          |> Integer.parse(16)
+          |> elem(0)
+          |> band(max_id)
 
-    IO.puts("Verifying that everything works correctly…")
-    IO.puts("")
-
-    hash =
-      OptimusHash.new(prime: prime, mod_inverse: mod_inverse, random: random, max_int: max_int)
-
-    Enum.map(0..100, fn _ ->
-      number = :rand.uniform(max_int)
-
-      if OptimusHash.decode(hash, OptimusHash.encode(hash, number)) != number do
-        Mix.raise(
-          "Failed to verify configuration. This is most likely an error in OptimusHash itself. Please report an issue with the following configuration: #{
-            inspect(hash)
-          }, number=#{number}"
+        OptimusHash.new(
+          prime: prime,
+          mod_inverse: mod_inverse,
+          random: random,
+          max_size: max_size
         )
-      end
-    end)
 
-    code =
-      "OptimusHash.new(prime: #{prime}, mod_inverse: #{mod_inverse}, random: #{random}, max_int: #{
-        max_int
-      })"
+        code =
+          Code.format_string!(
+            code_inline_template(%{
+              prime: prime,
+              mod_inverse: mod_inverse,
+              random: random,
+              max_size: max_size
+            })
+          )
 
-    config = """
-    config :optimus_hash,
-      prime: #{prime},
-      mod_inverse: #{mod_inverse},
-      random: #{random},
-      max_int: #{max_int}
-    """
+        Mix.shell().info("""
+        Configuration:
 
-    IO.puts("Configuration:\n")
-    IO.puts("```")
-    IO.puts(Code.format_string!(code))
-    IO.puts("```")
+          - prime: #{prime}
+          - mod_inverse: #{mod_inverse}
+          - random: #{random}
+          - max_size: #{max_size}
 
-    IO.puts("")
+        Code:
 
-    IO.puts("If you are using Mix, put this in your config:\n")
-    IO.puts("```")
-    IO.puts(Code.format_string!(config))
-    IO.puts("```")
-
-    IO.puts("")
-
-    wolfram_url = "https://www.wolframalpha.com/input/?i=is+#{prime}+a+prime+number"
-    IO.puts("Note: Make sure that #{prime} is really a prime number e.g. #{wolfram_url}")
+        ```
+        #{code}
+        ```
+        """)
+    end
   end
+
+  embed_template(:code_inline, """
+  OptimusHash.new(
+    prime: <%= @prime %>,
+    mod_inverse: <%= @mod_inverse %>,
+    random: <%= @random %>,
+    max_size: <%= @max_size %>
+  )
+  """)
 end
