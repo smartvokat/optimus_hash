@@ -1,5 +1,8 @@
 # OptimusHash
 
+[![hex.pm](https://img.shields.io/hexpm/v/optimus_hash.svg?style=flat)](https://hex.pm/packages/optimus_hash)
+[![CircleCI](https://circleci.com/gh/smartvokat/optimus_hash/tree/master.svg?style=svg)](https://circleci.com/gh/smartvokat/optimus_hash/tree/master)
+
 A small library to obfuscated integers based on Knuth's multiplicative hashing algorithm. The algorithm is fast, reversible and has zero collisions.
 
 This comes in very handy when you have e.g. integer-based primary keys in your database and you don't want to expose them to the outside world.
