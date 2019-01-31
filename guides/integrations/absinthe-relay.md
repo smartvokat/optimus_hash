@@ -1,12 +1,10 @@
 # Absinthe.Relay
 
-[Absinthe.Relay](https://github.com/absinthe-graphql/absinthe_relay) adds support for the Relay framework to [Absinthe](http://absinthe-graphql.org/).
-
-The package allows to overwrite the [global ID translator](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Node.IDTranslator.html#content) by using the the `Absinthe.Relay.Node.IDTranslator` behaviour.
+[Absinthe.Relay](https://github.com/absinthe-graphql/absinthe_relay) adds support for the Relay framework to [Absinthe](http://absinthe-graphql.org/). The package allows to overwrite the [global ID translator](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Node.IDTranslator.html#content) by using the the `Absinthe.Relay.Node.IDTranslator` behaviour.
 
 # Usage
 
-Seed the configuration values according to the documentation. You can use your applications `config.exs` or add the values inline in the `MyAppWeb.Schema.Ids` module.
+Seed the configuration values according to the [documentation](`OptimusHash`). You can use your applications `config.exs` or add the values inline in the `MyAppWeb.Schema.Ids` module.
 
 ```elixir
 # config/config.exs

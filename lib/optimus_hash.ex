@@ -23,12 +23,36 @@ defmodule OptimusHash do
   ## Seeding
 
   This package comes with a Mix task to generate the required configuration
-  values for you:
+  values for you. The task requires the `openssl` binary to be installed on your
+  system. If you don't want to or can't install it, you will have to calculate
+  or find a prime number yourself. A good starting point is the [the list of
+  the first fifty million primes](https://primes.utm.edu/lists/small/millions/).
 
       $ mix optimus_hash.seed
+      Configuration:
+
+        - prime: 2120909159
+        - mod_inverse: 1631586903
+        - random: 1288598321
+        - max_size: 31
+
+      Code:
+
+      ```
+      OptimusHash.new(
+        prime: 2_120_909_159,
+        mod_inverse: 1_631_586_903,
+        random: 1_288_598_321,
+        max_size: 31
+      )
+      ```
+
+  *Please do not use the example values used in this documentation for your
+  production environment. That would be silly.*
 
   You can set the size of the largest possible by passing `--bits=40`. If you
-  already have a prime number you can pass it in as the first argument.
+  already have a prime number you can pass it in as the first argument:
+  `mix optimus_hash.seed --bits=62 3665010176750768309`.
   """
 
   alias __MODULE__
