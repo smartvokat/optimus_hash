@@ -29,8 +29,7 @@ defmodule OptimusHash.MixProject do
 
   defp deps do
     [
-      # Docs
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false}
     ]
   end
 
