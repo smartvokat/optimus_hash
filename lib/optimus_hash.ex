@@ -135,7 +135,7 @@ defmodule OptimusHash do
   """
   @spec encode(OptimusHash.t(), non_neg_integer) :: non_neg_integer
   def encode(o, number) when is_integer(number) do
-    (number * o.prime &&& o.max_id) ^^^ o.random
+    Bitwise.bxor(number * o.prime &&& o.max_id, o.random)
   end
 
   def encode(_, _), do: nil
@@ -149,7 +149,7 @@ defmodule OptimusHash do
   """
   @spec decode(OptimusHash.t(), non_neg_integer) :: non_neg_integer
   def decode(o, number) when is_integer(number) do
-    (number ^^^ o.random) * o.mod_inverse &&& o.max_id
+    Bitwise.bxor(number, o.random) * o.mod_inverse &&& o.max_id
   end
 
   def decode(_, _), do: nil

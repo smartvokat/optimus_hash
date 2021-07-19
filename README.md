@@ -1,7 +1,7 @@
 # OptimusHash
 
 [![hex.pm](https://img.shields.io/hexpm/v/optimus_hash.svg?style=flat)](https://hex.pm/packages/optimus_hash)
-[![CircleCI](https://circleci.com/gh/smartvokat/optimus_hash/tree/master.svg?style=svg)](https://circleci.com/gh/smartvokat/optimus_hash/tree/master)
+[![Continuous Integration](https://github.com/smartvokat/optimus_hash/actions/workflows/ci.yaml/badge.svg)](https://github.com/smartvokat/optimus_hash/actions/workflows/ci.yaml)
 
 A small library to obfuscated integers based on Knuth's multiplicative hashing algorithm. The algorithm is fast, reversible and has zero collisions.
 

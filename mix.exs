@@ -23,14 +23,13 @@ defmodule OptimusHash.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [{:logger, :optional}, {:eex, :optional}, {:crypto, :optional}]
     ]
   end
 
   defp deps do
     [
-      # Docs
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false}
     ]
   end
 
