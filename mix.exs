@@ -23,7 +23,7 @@ defmodule OptimusHash.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [{:logger, :optional}, {:eex, :optional}, {:crypto, :optional}]
     ]
   end
 
