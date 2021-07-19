@@ -76,7 +76,8 @@ defmodule Mix.Tasks.OptimusHash.Seed do
         mod_inverse = OptimusHash.Helpers.mod_inverse(prime, max_id + 1)
 
         random =
-          :crypto.strong_rand_bytes(max_size)
+          ceil(max_size / 8)
+          |> :crypto.strong_rand_bytes()
           |> :binary.decode_unsigned()
           |> band(max_id)
 
