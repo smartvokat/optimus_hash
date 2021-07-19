@@ -77,9 +77,7 @@ defmodule Mix.Tasks.OptimusHash.Seed do
 
         random =
           :crypto.strong_rand_bytes(max_size)
-          |> Base.encode16()
-          |> Integer.parse(16)
-          |> elem(0)
+          |> :binary.decode_unsigned
           |> band(max_id)
 
         OptimusHash.new(
